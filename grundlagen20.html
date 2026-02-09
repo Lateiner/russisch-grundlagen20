@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russische Verben der Fortbewegung (Transitiv)</title>
+    <!-- Polyfill für Drag & Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --secondary-color: #f5f5f5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Einführungstabelle */
+        .grammar-box {
+            background-color: #e8eaf6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .grammar-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .grammar-table th, .grammar-table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .grammar-table th {
+            background-color: #c5cae9;
+        }
+
+        /* Aufgaben-Container */
+        .task-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .task-header {
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-number {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        /* Interaktive Elemente */
+        input[type="text"], select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-size: 1rem;
+            min-width: 120px;
+        }
+
+        input.correct, select.correct {
+            border-color: var(--success-color);
+            background-color: #e8f5e9;
+        }
+
+        input.incorrect, select.incorrect {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+        }
+
+        /* Drag and Drop Styles */
+        .drop-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .draggable {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .dropzone {
+            border: 2px dashed #ccc;
+            border-radius: 6px;
+            min-height: 60px;
+            padding: 10px;
+            flex: 1;
+            min-width: 150px;
+            background: #fafafa;
+        }
+
+        .dropzone h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: #666;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        /* Buttons */
+        .btn-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-check { background-color: var(--success-color); color: white; }
+        .btn-check:hover { background-color: #43a047; }
+
+        .btn-reset { background-color: #9e9e9e; color: white; }
+        .btn-reset:hover { background-color: #757575; }
+
+        .btn-solution { background-color: #2196f3; color: white; }
+        .btn-solution:hover { background-color: #1e88e5; }
+
+        .solution-box {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            color: #0d47a1;
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .btn-group { flex-direction: column; }
+            .drop-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Verben der Fortbewegung (Transitiv)</h1>
+
+    <div class="grammar-box">
+        <h2>Einführung</h2>
+        <p>Diese Verben beschreiben, wie man ein Objekt oder eine Person fortbewegt. Man unterscheidet drei Arten:</p>
+        <ol>
+            <li><strong>нести / носить</strong> (tragen): Etwas in den Händen halten.</li>
+            <li><strong>вести / водить</strong> (führen): Jemanden/Etwas begleiten, das selbst läuft (oder Auto fahren).</li>
+            <li><strong>везти / возить</strong> (befördern/transportieren): Etwas mit einem Fahrzeug transportieren.</li>
+        </ol>
+        
+        <h3>Die zwei Gruppen (Aspekte)</h3>
+        <table class="grammar-table">
+            <thead>
+                <tr>
+                    <th>Gruppe 1: Zielgerichtet (Einmalig/Jetzt)</th>
+                    <th>Gruppe 2: Allgemein (Wiederholt/Hin-und-Her)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>нести</strong> (Ich trage gerade...)</td>
+                    <td><strong>носить</strong> (Ich trage oft...)</td>
+                </tr>
+                <tr>
+                    <td><strong>вести</strong> (Ich führe gerade...)</td>
+                    <td><strong>водить</strong> (Ich führe oft...)</td>
+                </tr>
+                <tr>
+                    <td><strong>везти</strong> (Ich transportiere gerade...)</td>
+                    <td><strong>возить</strong> (Ich transportiere oft...)</td>
+                </tr>
+            </tbody>
+        </table>
+        <p><em>Signalwörter Gruppe 1:</em> сейчас, сегодня, вот...<br>
+           <em>Signalwörter Gruppe 2:</em> каждый день, часто, всегда, обычно, туда и обратно.</p>
+    </div>
+
+    <!-- Aufgabe 1: Multiple Choice (Bedeutung) -->
+    <div class="task-card" id="task1">
+        <div class="task-header">
+            <span>Aufgabe 1: Welches Verb passt zum Objekt?</span>
+            <span class="task-number">1/12</span>
+        </div>
+        <p>Wähle das passende Verbpaar für das dargestellte Objekt.</p>
+        
+        <div>1. Чемодан в руке (Koffer in der Hand):</div>
+        <select data-answer="нести/носить">
+            <option value="">Bitte wählen</option>
+            <option value="нести/носить">нести / носить</option>
+            <option value="вести/водить">вести / водить</option>
+            <option value="везти/возить">везти / возить</option>
+        </select>
+
+        <div>2. Собака на поводке (Hund an der Leine):</div>
+        <select data-answer="вести/водить">
+            <option value="">Bitte wählen</option>
+            <option value="нести/носить">нести / носить</option>
+            <option value="вести/водить">вести / водить</option>
+            <option value="везти/возить">везти / возить</option>
+        </select>
+
+        <div>3. Пассажир в такси (Passagier im Taxi):</div>
+        <select data-answer="везти/возить">
+            <option value="">Bitte wählen</option>
+            <option value="нести/носить">нести / носить</option>
+            <option value="вести/водить">вести / водить</option>
+            <option value="везти/возить">везти / возить</option>
+        </select>
+
+        <div class="solution-box">Lösung: 1. нести/носить, 2. вести/водить, 3. везти/возить</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelects('task1')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetTask('task1')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task1')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 2: Drag & Drop (Kategorisierung) -->
+    <div class="task-card" id="task2">
+        <div class="task-header">
+            <span>Aufgabe 2: Sortiere die Begriffe</span>
+            <span class="task-number">2/12</span>
+        </div>
+        <p>Ziehe die Wörter in die richtige Kategorie (wie bewegt man das?).</p>
+
+        <div class="drop-container" id="source-task2">
+            <div class="draggable" draggable="true" ondragstart="drag(event)" id="d1" data-cat="carry">Рюкзак</div>
+            <div class="draggable" draggable="true" ondragstart="drag(event)" id="d2" data-cat="lead">Ребёнок за руку</div>
+            <div class="draggable" draggable="true" ondragstart="drag(event)" id="d3" data-cat="transport">Друзья на машине</div>
+            <div class="draggable" draggable="true" ondragstart="drag(event)" id="d4" data-cat="carry">Тяжёлая коробка</div>
+        </div>
+
+        <div class="drop-container">
+            <div class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-accept="carry">
+                <h4>Tragen (нести/носить)</h4>
+            </div>
+            <div class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-accept="lead">
+                <h4>Führen (вести/водить)</h4>
+            </div>
+            <div class="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" data-accept="transport">
+                <h4>Fahren (везти/возить)</h4>
+            </div>
+        </div>
+
+        <div class="solution-box">Tragen: Рюкзак, Тяжёлая коробка. Führen: Ребёнок за руку. Fahren: Друзья на машине.</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkDragDrop('task2')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetDragDrop('task2', 'source-task2')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task2')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 3: Radio Buttons (Aspekt) -->
+    <div class="task-card" id="task3">
+        <div class="task-header">
+            <span>Aufgabe 3: Zielgerichtet oder Allgemein?</span>
+            <span class="task-number">3/12</span>
+        </div>
+        <p>Entscheide anhand des Signalwortes, welche Gruppe (1 oder 2) passt.</p>
+
+        <div>1. <strong>Каждый день</strong> (Jeden Tag):</div>
+        <label><input type="radio" name="t3q1" value="multi"> Gruppe 2 (носить/водить/возить)</label><br>
+        <label><input type="radio" name="t3q1" value="uni"> Gruppe 1 (нести/вести/везти)</label>
+        <br><br>
+
+        <div>2. <strong>Сейчас</strong> (Jetzt gerade):</div>
+        <label><input type="radio" name="t3q2" value="multi"> Gruppe 2 (носить/водить/возить)</label><br>
+        <label><input type="radio" name="t3q2" value="uni"> Gruppe 1 (нести/вести/везти)</label>
+
+        <div class="solution-box">1. Gruppe 2 (wiederholt), 2. Gruppe 1 (jetzt).</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkRadios('task3', {'t3q1':'multi', 't3q2':'uni'})">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadios('task3')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task3')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 4: Dropdown (Präsens Konjugation) -->
+    <div class="task-card" id="task4">
+        <div class="task-header">
+            <span>Aufgabe 4: Konjugation im Präsens</span>
+            <span class="task-number">4/12</span>
+        </div>
+        <p>Wähle die richtige Form (Achte auf die Person!).</p>
+
+        <div>1. Я (jetzt) <select data-answer="несу"><option>-</option><option value="ношу">ношу</option><option value="несу">несу</option></select> сумку.</div>
+        <div>2. Ты (oft) <select data-answer="водишь"><option>-</option><option value="ведёшь">ведёшь</option><option value="водишь">водишь</option></select> сына в кино?</div>
+        <div>3. Мы (gerade) <select data-answer="везём"><option>-</option><option value="возим">возим</option><option value="везём">везём</option></select> бабушку на дачу.</div>
+
+        <div class="solution-box">1. несу (jetzt), 2. водишь (oft), 3. везём (gerade).</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelects('task4')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetTask('task4')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task4')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 5: Dropdown (Vergangenheit) -->
+    <div class="task-card" id="task5">
+        <div class="task-header">
+            <span>Aufgabe 5: Vergangenheit (Präteritum)</span>
+            <span class="task-number">5/12</span>
+        </div>
+        <p>Wähle das richtige Verb in der Vergangenheit (Maskulinum: он). Achte auf die Gruppe!</p>
+
+        <div>1. Вчера он (вести - zielgerichtet) 
+            <select data-answer="вёл">
+                <option value="">-</option>
+                <option value="вёл">вёл</option>
+                <option value="водил">водил</option>
+                <option value="вела">вела</option>
+            </select>
+            собаку к ветеринару.
+        </div>
+        <div>2. Раньше он часто (возить - allgemein) 
+            <select data-answer="возил">
+                <option value="">-</option>
+                <option value="вёз">вёз</option>
+                <option value="возил">возил</option>
+                <option value="носил">носил</option>
+            </select>
+            друзей на море.
+        </div>
+        <div>3. Он шёл и (нести - zielgerichtet) 
+            <select data-answer="нёс">
+                <option value="">-</option>
+                <option value="носил">носил</option>
+                <option value="несла">несла</option>
+                <option value="нёс">нёс</option>
+            </select>
+            цветы.
+        </div>
+
+        <div class="solution-box">1. вёл, 2. возил, 3. нёс</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelects('task5')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetTask('task5')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task5')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 6: Dropdown (Transformation) -->
+    <div class="task-card" id="task6">
+        <div class="task-header">
+            <span>Aufgabe 6: Transformation (Häufigkeit)</span>
+            <span class="task-number">6/12</span>
+        </div>
+        <p>Forme den Satz um: Von "Heute" (einmalig) zu "Oft" (mehrmals). Wähle das passende Verb.</p>
+        
+        <p>Beispiel: Сегодня он несёт книгу. -> Он часто <em>носит</em> книгу.</p>
+
+        <div>1. Сегодня мама ведёт дочку. -> Мама часто 
+            <select data-answer="водит">
+                <option value="">-</option>
+                <option value="водит">водит</option>
+                <option value="ведёт">ведёт</option>
+                <option value="носит">носит</option>
+            </select>
+            дочку.
+        </div>
+        <div>2. Сейчас такси везёт туриста. -> Такси часто 
+            <select data-answer="возит">
+                <option value="">-</option>
+                <option value="везёт">везёт</option>
+                <option value="возит">возит</option>
+                <option value="ездит">ездит</option>
+            </select>
+            туристов.
+        </div>
+
+        <div class="solution-box">1. водит, 2. возит</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelects('task6')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetTask('task6')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task6')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 7: Matching (Deutsch-Russisch) -->
+    <div class="task-card" id="task7">
+        <div class="task-header">
+            <span>Aufgabe 7: Übersetzung</span>
+            <span class="task-number">7/12</span>
+        </div>
+        <p>Welches russische Verb passt zur deutschen Beschreibung?</p>
+
+        <div>1. Jemanden zu Fuß begleiten (regelmäßig):</div>
+        <select data-answer="водить">
+            <option value="">Wählen...</option>
+            <option value="водить">водить</option>
+            <option value="нести">нести</option>
+            <option value="ездить">ездить</option>
+        </select>
+
+        <div>2. Etwas mit dem Auto transportieren (jetzt):</div>
+        <select data-answer="везти">
+            <option value="">Wählen...</option>
+            <option value="возить">возить</option>
+            <option value="везти">везти</option>
+            <option value="вести">вести</option>
+        </select>
+
+        <div class="solution-box">1. водить, 2. везти</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelects('task7')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetTask('task7')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task7')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 8: Fehlersuche -->
+    <div class="task-card" id="task8">
+        <div class="task-header">
+            <span>Aufgabe 8: Fehlersuche</span>
+            <span class="task-number">8/12</span>
+        </div>
+        <p>In welchem Satz ist das Verb <strong>falsch</strong> verwendet?</p>
+
+        <label><input type="radio" name="t8" value="wrong1"> Папа везёт детей в школу на машине.</label><br>
+        <label><input type="radio" name="t8" value="correct_choice"> Я часто несу рюкзак в школу.</label><br>
+        <label><input type="radio" name="t8" value="wrong2"> Мама ведёт сына за руку.</label>
+        
+        <p style="font-size: 0.9em; color: #666;">(Hinweis: Welcher Satz ist logisch falsch oder benutzt das falsche Aspekt-Verb für "oft"?)</p>
+
+        <div class="solution-box">Der Fehler ist in Satz 2: "Я часто несу". Richtig wäre "Я часто ношу" (da 'oft' = Gruppe 2).</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkRadios('task8', {'t8':'correct_choice'})">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadios('task8')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task8')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 9: Dropdown (Hin und Zurück) -->
+    <div class="task-card" id="task9">
+        <div class="task-header">
+            <span>Aufgabe 9: Hin und Zurück</span>
+            <span class="task-number">9/12</span>
+        </div>
+        <p>Wenn man "hin und zurück" geht/fährt, benutzt man immer Gruppe 2. Ergänze.</p>
+
+        <div>Вчера мы (führten/brachten) 
+            <select data-answer="водили">
+                <option value="">-</option>
+                <option value="вели">вели</option>
+                <option value="водили">водили</option>
+                <option value="несли">несли</option>
+            </select>
+            собаку в парк и обратно.
+        </div>
+        <div>Летом родители (transportierten/fuhren) 
+            <select data-answer="возили">
+                <option value="">-</option>
+                <option value="везли">везли</option>
+                <option value="возили">возили</option>
+                <option value="ездили">ездили</option>
+            </select>
+            нас на дачу (и обратно).
+        </div>
+
+        <div class="solution-box">1. водили, 2. возили (Vergangenheit Plural)</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelects('task9')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetTask('task9')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task9')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 10: Präpositionen -->
+    <div class="task-card" id="task10">
+        <div class="task-header">
+            <span>Aufgabe 10: Präpositionen als Hilfe</span>
+            <span class="task-number">10/12</span>
+        </div>
+        <p>Die Präposition <strong>по</strong> (durch/herum) verlangt meist Gruppe 2 (planlose Bewegung).</p>
+
+        <div>Он ходит и <select data-answer="носит"><option>-</option><option value="несёт">несёт</option><option value="носит">носит</option></select> телефон по комнате.</div>
+        <div>Туристы ездят и таксист <select data-answer="возит"><option>-</option><option value="везёт">везёт</option><option value="возит">возит</option></select> их по городу.</div>
+
+        <div class="solution-box">1. носит, 2. возит</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelects('task10')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetTask('task10')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task10')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 11: Dropdown (Auto fahren) -->
+    <div class="task-card" id="task11">
+        <div class="task-header">
+            <span>Aufgabe 11: Der Fahrer (Spezialfall)</span>
+            <span class="task-number">11/12</span>
+        </div>
+        <p>Wenn man selbst fährt (am Steuer sitzt), benutzt man <strong>вести/водить</strong> машину.</p>
+
+        <div>1. Я (kann fahren) 
+            <select data-answer="вожу">
+                <option value="">-</option>
+                <option value="вожу">вожу</option>
+                <option value="веду">веду</option>
+                <option value="ношу">ношу</option>
+            </select>
+            машину. (Generell)
+        </div>
+        <div>2. Не звони мне, я сейчас 
+            <select data-answer="веду">
+                <option value="">-</option>
+                <option value="вожу">вожу</option>
+                <option value="веду">веду</option>
+                <option value="несу">несу</option>
+            </select>
+            машину! (Jetzt)
+        </div>
+
+        <div class="solution-box">1. вожу (Fähigkeit/Allgemein), 2. веду (Jetzt gerade)</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelects('task11')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetTask('task11')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task11')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 12: Dropdown (Mix) -->
+    <div class="task-card" id="task12">
+        <div class="task-header">
+            <span>Aufgabe 12: Alles zusammen</span>
+            <span class="task-number">12/12</span>
+        </div>
+        <p>Ergänze die Verben im richtigen Aspekt und in der richtigen Form.</p>
+
+        <p>
+            Каждое утро папа (fährt/transportiert) 
+            <select data-answer="возит">
+                <option value="">-</option>
+                <option value="возит">возит</option>
+                <option value="везёт">везёт</option>
+                <option value="носит">носит</option>
+            </select>
+            меня в школу.
+            Но сегодня машина сломалась. Поэтому мы шли пешком.
+            Папа шёл и (trug) 
+            <select data-answer="нёс">
+                <option value="">-</option>
+                <option value="нёс">нёс</option>
+                <option value="носил">носил</option>
+                <option value="вёл">вёл</option>
+            </select>
+            мой тяжёлый рюкзак.
+            Обычно я сам (trage) 
+            <select data-answer="ношу">
+                <option value="">-</option>
+                <option value="ношу">ношу</option>
+                <option value="несу">несу</option>
+                <option value="вожу">вожу</option>
+            </select>
+            свой рюкзак, но сегодня я устал.
+        </p>
+
+        <div class="solution-box">1. возит (jeden Morgen), 2. нёс (einmalig, Vergangenheit), 3. ношу (normalerweise/oft).</div>
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkSelects('task12')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetTask('task12')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleSolution('task12')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* --- Allgemeine Funktionen --- */
+
+    function toggleSolution(taskId) {
+        const solutionBox = document.querySelector(`#${taskId} .solution-box`);
+        if (solutionBox.style.display === "block") {
+            solutionBox.style.display = "none";
+        } else {
+            solutionBox.style.display = "block";
+        }
+    }
+
+    /* --- Logik für Text Inputs --- */
+    function checkInputs(taskId) {
+        const inputs = document.querySelectorAll(`#${taskId} input[type="text"]`);
+        inputs.forEach(input => {
+            const userAnswer = input.value.trim().toLowerCase();
+            const correctAnswer = input.getAttribute('data-answer').toLowerCase();
+            
+            // Entferne alte Klassen
+            input.classList.remove('correct', 'incorrect');
+
+            if (userAnswer === correctAnswer) {
+                input.classList.add('correct');
+            } else {
+                input.classList.add('incorrect');
+            }
+        });
+    }
+
+    /* --- Logik für Select Dropdowns --- */
+    function checkSelects(taskId) {
+        const selects = document.querySelectorAll(`#${taskId} select`);
+        selects.forEach(select => {
+            const userAnswer = select.value;
+            const correctAnswer = select.getAttribute('data-answer');
+            
+            select.classList.remove('correct', 'incorrect');
+
+            if (userAnswer === correctAnswer) {
+                select.classList.add('correct');
+            } else {
+                select.classList.add('incorrect');
+            }
+        });
+    }
+
+    /* --- Logik für Radio Buttons --- */
+    function checkRadios(taskId, correctMap) {
+        // correctMap ist ein Objekt: {'inputName': 'correctValue'}
+        // Entferne erst alle Styles
+        const container = document.getElementById(taskId);
+        const labels = container.querySelectorAll('label');
+        labels.forEach(l => l.style.color = 'inherit');
+        labels.forEach(l => l.style.fontWeight = 'normal');
+
+        for (const [name, correctValue] of Object.entries(correctMap)) {
+            const radios = document.getElementsByName(name);
+            let userSelected = null;
+            let correctRadio = null;
+
+            radios.forEach(r => {
+                if (r.checked) userSelected = r;
+                if (r.value === correctValue) correctRadio = r;
+            });
+
+            if (userSelected) {
+                if (userSelected.value === correctValue) {
+                    userSelected.parentElement.style.color = 'green';
+                    userSelected.parentElement.style.fontWeight = 'bold';
+                } else {
+                    userSelected.parentElement.style.color = 'red';
+                }
+            }
+        }
+    }
+
+    function resetRadios(taskId) {
+        const radios = document.querySelectorAll(`#${taskId} input[type="radio"]`);
+        radios.forEach(r => {
+            r.checked = false;
+            r.parentElement.style.color = 'inherit';
+            r.parentElement.style.fontWeight = 'normal';
+        });
+        document.querySelector(`#${taskId} .solution-box`).style.display = 'none';
+    }
+
+    /* --- Drag and Drop Funktionen --- */
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var draggedElement = document.getElementById(data);
+        
+        // Finde die Dropzone (könnte das h4 oder das div sein)
+        let target = ev.target;
+        if(target.tagName === 'H4') target = target.parentElement;
+        
+        if (target.classList.contains('dropzone') || target.classList.contains('drop-container')) {
+            target.appendChild(draggedElement);
+        }
+    }
+
+    function checkDragDrop(taskId) {
+        const dropzones = document.querySelectorAll(`#${taskId} .dropzone`);
+        
+        dropzones.forEach(zone => {
+            const requiredCat = zone.getAttribute('data-accept');
+            const items = zone.querySelectorAll('.draggable');
+            
+            items.forEach(item => {
+                const itemCat = item.getAttribute('data-cat');
+                if (itemCat === requiredCat) {
+                    item.style.backgroundColor = '#4caf50'; // Green
+                } else {
+                    item.style.backgroundColor = '#f44336'; // Red
+                }
+            });
+        });
+    }
+
+    function resetDragDrop(taskId, sourceId) {
+        const sourceContainer = document.getElementById(sourceId);
+        const draggables = document.querySelectorAll(`#${taskId} .draggable`);
+        
+        draggables.forEach(d => {
+            sourceContainer.appendChild(d);
+            d.style.backgroundColor = ''; // Reset color to CSS default
+        });
+        document.querySelector(`#${taskId} .solution-box`).style.display = 'none';
+    }
+
+    /* --- Allgemeiner Reset --- */
+    function resetTask(taskId) {
+        const container = document.getElementById(taskId);
+        
+        // Inputs & Selects
+        const inputs = container.querySelectorAll('input[type="text"], select');
+        inputs.forEach(input => {
+            input.value = "";
+            input.selectedIndex = 0;
+            input.classList.remove('correct', 'incorrect');
+        });
+
+        // Solution Box hide
+        const solution = container.querySelector('.solution-box');
+        if(solution) solution.style.display = 'none';
+    }
+
+</script>
+
+</body>
+</html>
