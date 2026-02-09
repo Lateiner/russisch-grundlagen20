@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aufgabe: Objekt-Kategorisierung</title>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --bg-color: #eef2f5;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Aufgaben-Container Design */
+        .task-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            border: 1px solid #ddd;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .task-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .task-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .instruction {
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        /* --- RESPONSIVES GRID FÜR DIE LISTE --- */
+        .categorization-grid {
+            display: grid;
+            /* Passt sich an: Spalten sind mind. 260px breit. */
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Einzelnes Item */
+        .cat-item {
+            background-color: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s;
+        }
+
+        .cat-item:hover {
+            border-color: #b0bec5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .noun-label {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .german-hint {
+            font-size: 0.85rem;
+            color: #777;
+            font-weight: normal;
+            font-style: italic;
+        }
+
+        /* Dropdown Styling */
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: white;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+        }
+
+        /* Feedback Farben */
+        select.correct {
+            border-color: var(--success-color);
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        select.incorrect {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        /* Lösung im Kasten */
+        .mini-solution {
+            display: none;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #0d47a1;
+            background-color: #e3f2fd;
+            padding: 5px 8px;
+            border-radius: 4px;
+            border-left: 3px solid #2196f3;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            border-top: 2px solid #f0f0f0;
+            padding-top: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+            transition: filter 0.2s;
+        }
+
+        button:hover { filter: brightness(90%); }
+        .btn-check { background-color: var(--success-color); color: white; }
+        .btn-reset { background-color: #90a4ae; color: white; }
+        .btn-solution { background-color: #2196f3; color: white; }
+
+        @media (max-width: 600px) {
+            .btn-group { flex-direction: column; }
+            .categorization-grid { grid-template-columns: 1fr; } /* Untereinander auf Handy */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="task-card" id="task-categorization">
+        
+        <div class="task-header">
+            <h2 class="task-title">Wortschatz: Objekt-Kategorisierung</h2>
+            <span class="task-badge">12 Begriffe</span>
+        </div>
+
+        <p class="instruction">
+            Welches Verbpaar passt zu welchem Substantiv? Wählen Sie aus.
+        </p>
+
+        <div class="categorization-grid">
+
+            <!-- Item 1 -->
+            <div class="cat-item">
+                <div class="noun-label">🎒 рюкзак <span class="german-hint">(Rucksack)</span></div>
+                <select data-answer="carry">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: нести / носить</div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="cat-item">
+                <div class="noun-label">🐕 собака <span class="german-hint">(Hund)</span></div>
+                <select data-answer="lead">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: вести / водить</div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="cat-item">
+                <div class="noun-label">🚕 пассажир <span class="german-hint">(Passagier)</span></div>
+                <select data-answer="transport">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: везти / возить</div>
+            </div>
+
+            <!-- Item 4 -->
+            <div class="cat-item">
+                <div class="noun-label">🧳 чемодан на колесах <span class="german-hint">(Koffer auf Rollen)</span></div>
+                <select data-answer="transport">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: везти / возить</div>
+            </div>
+
+            <!-- Item 5 -->
+            <div class="cat-item">
+                <div class="noun-label">👶 ребенок за руку <span class="german-hint">(Kind an der Hand)</span></div>
+                <select data-answer="lead">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: вести / водить</div>
+            </div>
+
+            <!-- Item 6 -->
+            <div class="cat-item">
+                <div class="noun-label">📦 тяжелая коробка <span class="german-hint">(schwere Kiste)</span></div>
+                <select data-answer="carry">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: нести / носить</div>
+            </div>
+
+            <!-- Item 7 -->
+            <div class="cat-item">
+                <div class="noun-label">🚚 мебель <span class="german-hint">(Möbel im LKW)</span></div>
+                <select data-answer="transport">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: везти / возить</div>
+            </div>
+
+            <!-- Item 8 -->
+            <div class="cat-item">
+                <div class="noun-label">🕶️ слепой человек <span class="german-hint">(blinde Person)</span></div>
+                <select data-answer="lead">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: вести / водить</div>
+            </div>
+
+            <!-- Item 9 -->
+            <div class="cat-item">
+                <div class="noun-label">💐 цветы <span class="german-hint">(Blumen)</span></div>
+                <select data-answer="carry">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: нести / носить</div>
+            </div>
+
+            <!-- Item 10 -->
+            <div class="cat-item">
+                <div class="noun-label">🪵 дрова <span class="german-hint">(Brennholz im Wagen)</span></div>
+                <select data-answer="transport">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: везти / возить</div>
+            </div>
+
+            <!-- Item 11 -->
+            <div class="cat-item">
+                <div class="noun-label">💼 портфель <span class="german-hint">(Aktenkoffer in Hand)</span></div>
+                <select data-answer="carry">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: нести / носить</div>
+            </div>
+
+            <!-- Item 12 -->
+            <div class="cat-item">
+                <div class="noun-label">🐻 медведь <span class="german-hint">(Bär im Zirkus)</span></div>
+                <select data-answer="lead">
+                    <option value="">Wählen...</option>
+                    <option value="carry">нести / носить</option>
+                    <option value="lead">вести / водить</option>
+                    <option value="transport">везти / возить</option>
+                </select>
+                <div class="mini-solution">Lösung: вести / водить</div>
+            </div>
+
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkCategorization()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetCategorization()">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleCatSolution()">Lösung anzeigen</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const catTaskID = 'task-categorization';
+
+    function checkCategorization() {
+        const container = document.getElementById(catTaskID);
+        const selects = container.querySelectorAll('select');
+        
+        selects.forEach(select => {
+            const userAnswer = select.value;
+            const correctAnswer = select.getAttribute('data-answer');
+            
+            select.classList.remove('correct', 'incorrect');
+
+            if (userAnswer !== "") {
+                if (userAnswer === correctAnswer) {
+                    select.classList.add('correct');
+                } else {
+                    select.classList.add('incorrect');
+                }
+            }
+        });
+    }
+
+    function resetCategorization() {
+        const container = document.getElementById(catTaskID);
+        const selects = container.querySelectorAll('select');
+        const solutions = container.querySelectorAll('.mini-solution');
+
+        selects.forEach(select => {
+            select.selectedIndex = 0;
+            select.classList.remove('correct', 'incorrect');
+        });
+
+        solutions.forEach(sol => {
+            sol.style.display = 'none';
+        });
+    }
+
+    function toggleCatSolution() {
+        const container = document.getElementById(catTaskID);
+        const solutions = container.querySelectorAll('.mini-solution');
+        
+        // Prüfen ob die erste Lösung sichtbar ist
+        const isVisible = solutions.length > 0 && solutions[0].style.display === 'block';
+
+        solutions.forEach(sol => {
+            sol.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+</script>
+
+</body>
+</html>
