@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aufgabe: Präpositionen Drill</title>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --bg-color: #eef2f5;
+            --card-bg: #ffffff;
+            --hint-color: #7986cb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Aufgaben-Karte */
+        .task-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            border: 1px solid #ddd;
+        }
+
+        .task-header {
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+
+        .task-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0 0 5px 0;
+        }
+
+        .instruction {
+            color: #555;
+            margin-bottom: 20px;
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        /* --- DRILL ITEMS (Sätze) --- */
+        .drill-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .drill-item {
+            background-color: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap; /* Wichtig für Responsivität! */
+            align-items: center;
+            gap: 8px; /* Abstand zwischen Wörtern/Dropdowns */
+            font-size: 1.05rem;
+            position: relative;
+        }
+
+        /* Wort-Bausteine */
+        .txt-segment {
+            white-space: nowrap;
+        }
+
+        /* Hinweise in Klammern */
+        .hint {
+            color: var(--hint-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Dropdowns */
+        select {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+        }
+
+        /* Feedback */
+        select.correct {
+            border-color: var(--success-color);
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        select.incorrect {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        /* Inline Lösung */
+        .inline-solution {
+            display: none;
+            width: 100%; /* Breche auf neue Zeile um */
+            margin-top: 8px;
+            padding: 8px;
+            background-color: #e3f2fd;
+            color: #1565c0;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+            border-top: 2px solid #f0f0f0;
+            padding-top: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s;
+            flex: 1;
+        }
+
+        button:hover { filter: brightness(90%); }
+        .btn-check { background-color: var(--success-color); color: white; }
+        .btn-reset { background-color: #90a4ae; color: white; }
+        .btn-solution { background-color: #2196f3; color: white; }
+
+        @media (max-width: 600px) {
+            .btn-group { flex-direction: column; }
+            .drill-item { padding: 12px; gap: 6px; }
+            select { padding: 8px 4px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="task-card" id="task-prep">
+        
+        <div class="task-header">
+            <h2 class="task-title">Präpositionen & Fälle</h2>
+            <span class="task-badge">6 Sätze</span>
+        </div>
+
+        <p class="instruction">
+            Entscheiden Sie: Ist es eine Bewegung <strong>an einem Ort</strong> (<em>по + Dativ</em>) oder eine zielgerichtete Bewegung <strong>wohin?</strong> (<em>в/на + Akkusativ</em>). Ergänzen Sie Verb und Substantiv.
+        </p>
+
+        <div class="drill-list">
+
+            <!-- Satz 1: Herumfahren (Po + Dativ) -->
+            <div class="drill-item">
+                <span class="txt-segment">1. Он</span>
+                <span class="hint">(возить)</span>
+                <select data-answer="возит">
+                    <option value="">...</option>
+                    <option value="везёт">везёт</option>
+                    <option value="возит">возит</option>
+                </select>
+                <span class="txt-segment">туристов по</span>
+                <span class="hint">(город)</span>
+                <select data-answer="городу">
+                    <option value="">...</option>
+                    <option value="город">город</option>
+                    <option value="городу">городу</option>
+                    <option value="города">города</option>
+                </select>
+                <span class="txt-segment">.</span>
+                <div class="inline-solution">Lösung: Он возит туристов по городу.</div>
+            </div>
+
+            <!-- Satz 2: Zielgerichtet (V + Akkusativ) -->
+            <div class="drill-item">
+                <span class="txt-segment">2. Мальчик</span>
+                <span class="hint">(нести)</span>
+                <select data-answer="несёт">
+                    <option value="">...</option>
+                    <option value="несёт">несёт</option>
+                    <option value="носит">носит</option>
+                </select>
+                <span class="txt-segment">коробку в</span>
+                <span class="hint">(комната)</span>
+                <select data-answer="комнату">
+                    <option value="">...</option>
+                    <option value="комнату">комнату</option>
+                    <option value="комнате">комнате</option>
+                    <option value="комнаты">комнаты</option>
+                </select>
+                <span class="txt-segment">.</span>
+                <div class="inline-solution">Lösung: Мальчик несёт коробку в комнату.</div>
+            </div>
+
+            <!-- Satz 3: Herumlaufen (Po + Dativ) -->
+            <div class="drill-item">
+                <span class="txt-segment">3. Мама</span>
+                <span class="hint">(водить)</span>
+                <select data-answer="водит">
+                    <option value="">...</option>
+                    <option value="водит">водит</option>
+                    <option value="ведёт">ведёт</option>
+                </select>
+                <span class="txt-segment">ребёнка по</span>
+                <span class="hint">(парк)</span>
+                <select data-answer="парку">
+                    <option value="">...</option>
+                    <option value="парк">парк</option>
+                    <option value="парке">парке</option>
+                    <option value="парку">парку</option>
+                </select>
+                <span class="txt-segment">.</span>
+                <div class="inline-solution">Lösung: Мама водит ребёнка по парку.</div>
+            </div>
+
+            <!-- Satz 4: Zielgerichtet (Na + Akkusativ) -->
+            <div class="drill-item">
+                <span class="txt-segment">4. Водитель</span>
+                <span class="hint">(везти)</span>
+                <select data-answer="везёт">
+                    <option value="">...</option>
+                    <option value="возит">возит</option>
+                    <option value="везёт">везёт</option>
+                </select>
+                <span class="txt-segment">босса на</span>
+                <span class="hint">(встреча)</span>
+                <select data-answer="встречу">
+                    <option value="">...</option>
+                    <option value="встречу">встречу</option>
+                    <option value="встрече">встрече</option>
+                    <option value="встречи">встречи</option>
+                </select>
+                <span class="txt-segment">.</span>
+                <div class="inline-solution">Lösung: Водитель везёт босса на встречу.</div>
+            </div>
+
+            <!-- Satz 5: Zielgerichtet (V + Akkusativ) -->
+            <div class="drill-item">
+                <span class="txt-segment">5. Девушка</span>
+                <span class="hint">(вести)</span>
+                <select data-answer="ведёт">
+                    <option value="">...</option>
+                    <option value="водит">водит</option>
+                    <option value="ведёт">ведёт</option>
+                </select>
+                <span class="txt-segment">собаку в</span>
+                <span class="hint">(клиника)</span>
+                <select data-answer="клинику">
+                    <option value="">...</option>
+                    <option value="клиника">клиника</option>
+                    <option value="клинике">клинике</option>
+                    <option value="клинику">клинику</option>
+                </select>
+                <span class="txt-segment">.</span>
+                <div class="inline-solution">Lösung: Девушка ведёт собаку в клинику.</div>
+            </div>
+
+            <!-- Satz 6: Herumtragen (Po + Dativ) -->
+            <div class="drill-item">
+                <span class="txt-segment">6. Мы</span>
+                <span class="hint">(носить)</span>
+                <select data-answer="носим">
+                    <option value="">...</option>
+                    <option value="несём">несём</option>
+                    <option value="носим">носим</option>
+                </select>
+                <span class="txt-segment">мебель по</span>
+                <span class="hint">(улица)</span>
+                <select data-answer="улице">
+                    <option value="">...</option>
+                    <option value="улицу">улицу</option>
+                    <option value="улице">улице</option>
+                    <option value="улицы">улицы</option>
+                </select>
+                <span class="txt-segment">.</span>
+                <div class="inline-solution">Lösung: Мы носим мебель по улице.</div>
+            </div>
+
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkPrep()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetPrep()">Zurücksetzen</button>
+            <button class="btn-solution" onclick="togglePrepSolution()">Lösung anzeigen</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const prepTaskID = 'task-prep';
+
+    function checkPrep() {
+        const container = document.getElementById(prepTaskID);
+        const selects = container.querySelectorAll('select');
+        
+        selects.forEach(select => {
+            const userAnswer = select.value;
+            const correctAnswer = select.getAttribute('data-answer');
+            
+            // Alte Klassen entfernen
+            select.classList.remove('correct', 'incorrect');
+
+            if (userAnswer !== "") {
+                if (userAnswer === correctAnswer) {
+                    select.classList.add('correct');
+                } else {
+                    select.classList.add('incorrect');
+                }
+            }
+        });
+    }
+
+    function resetPrep() {
+        const container = document.getElementById(prepTaskID);
+        const selects = container.querySelectorAll('select');
+        const solutions = container.querySelectorAll('.inline-solution');
+
+        selects.forEach(select => {
+            select.selectedIndex = 0;
+            select.classList.remove('correct', 'incorrect');
+        });
+
+        solutions.forEach(sol => {
+            sol.style.display = 'none';
+        });
+    }
+
+    function togglePrepSolution() {
+        const container = document.getElementById(prepTaskID);
+        const solutions = container.querySelectorAll('.inline-solution');
+        
+        // Prüfen ob die erste Lösung sichtbar ist
+        const isVisible = solutions.length > 0 && solutions[0].style.display === 'block';
+
+        solutions.forEach(sol => {
+            sol.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+</script>
+
+</body>
+</html>
