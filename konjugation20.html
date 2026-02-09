@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aufgabe: Konjugation (Tap & Place)</title>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --secondary-color: #c5cae9;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --bg-color: #eef2f5;
+            --card-bg: #ffffff;
+            --slot-bg: #f0f2f5;
+            --item-bg: #fff;
+            --selected-color: #ffeb3b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        /* Aufgaben-Karte */
+        .task-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            border: 1px solid #ddd;
+            min-height: 600px; 
+        }
+
+        .task-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .task-title {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .instruction {
+            color: #555;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            background: #e8eaf6;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        /* --- TABS SYSTEM --- */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: #e0e0e0;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover { background: #d0d0d0; }
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(2px);
+        }
+
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- SPALTEN --- */
+        .verb-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .verb-column {
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+
+        .verb-title {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: bold;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 5px;
+        }
+
+        /* --- TABELLE --- */
+        .conj-row {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            gap: 10px;
+            /* Mehr Abstand nach unten für die größeren Lösungen */
+            margin-bottom: 25px; 
+            align-items: center;
+            position: relative; /* Wichtig für die Positionierung der Lösung */
+        }
+
+        .conj-label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #444;
+            text-align: right;
+        }
+
+        /* Das Zielfeld (Slot) */
+        .drop-slot {
+            height: 42px; /* Etwas höher für bessere Bedienung */
+            background-color: var(--slot-bg);
+            border: 2px dashed #ccc;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .drop-slot:hover { border-color: var(--primary-color); }
+        
+        .drop-slot.correct { border: 2px solid var(--success-color); background-color: #e8f5e9; }
+        .drop-slot.incorrect { border: 2px solid var(--error-color); background-color: #ffebee; }
+
+        /* --- WORTVORRAT (POOL) --- */
+        .word-pool {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #90caf9;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            min-height: 60px;
+        }
+
+        .word-item {
+            background-color: white;
+            border: 1px solid #bbb;
+            padding: 8px 16px; /* Größere Klickfläche */
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1.05rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            user-select: none;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        .word-item:hover { transform: translateY(-2px); }
+        
+        .word-item.selected {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Wenn Wort im Slot liegt */
+        .drop-slot .word-item {
+            box-shadow: none;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: #000; /* Textfarbe im Slot normalisieren */
+        }
+        
+        /* --- LÖSUNGSTEXT STYLING (NEU) --- */
+        .slot-solution {
+            display: none;
+            position: absolute;
+            bottom: -28px; /* Unterhalb des Slots */
+            left: 50%;
+            transform: translateX(-50%); /* Zentriert */
+            
+            /* Größere Schrift */
+            font-size: 1.1rem; 
+            font-weight: bold;
+            
+            /* Design als Badge */
+            color: #ffffff;
+            background: #1565c0;
+            padding: 2px 10px;
+            border-radius: 5px;
+            white-space: nowrap;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            pointer-events: none;
+        }
+
+        /* Kleiner Pfeil nach oben an der Lösung (optional, sieht hübsch aus) */
+        .slot-solution::before {
+            content: "";
+            position: absolute;
+            top: -5px;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent #1565c0 transparent;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s;
+            flex: 1;
+        }
+
+        button:hover { filter: brightness(90%); }
+        .btn-check { background-color: var(--success-color); color: white; }
+        .btn-reset { background-color: #90a4ae; color: white; }
+        .btn-solution { background-color: #2196f3; color: white; }
+
+        @media (max-width: 700px) {
+            .verb-columns { grid-template-columns: 1fr; gap: 30px; }
+            .task-card { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="task-card" id="task-tap-place">
+        
+        <div class="task-header">
+            <div class="task-title">3. Konjugation (Präsens)</div>
+        </div>
+
+        <p class="instruction">
+            <strong>Antippen & Zuordnen:</strong> 
+            1. Tippen Sie unten auf ein Wort. 2. Tippen Sie auf das leere Feld in der Tabelle.
+        </p>
+
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('tab1')">Tragen</button>
+            <button class="tab-btn" onclick="switchTab('tab2')">Führen</button>
+            <button class="tab-btn" onclick="switchTab('tab3')">Fahren</button>
+        </div>
+
+        <!-- TAB 1: TRAGEN -->
+        <div id="tab1" class="tab-content active">
+            <div class="verb-columns">
+                <!-- Spalte 1 -->
+                <div class="verb-column">
+                    <div class="verb-title">НЕСТИ (Ziel)</div>
+                    <div class="conj-row"><div class="conj-label">Я</div><div class="drop-slot" data-correct="несу"><span class="slot-solution">несу</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Ты</div><div class="drop-slot" data-correct="несёшь"><span class="slot-solution">несёшь</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Он/Она</div><div class="drop-slot" data-correct="несёт"><span class="slot-solution">несёт</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Мы</div><div class="drop-slot" data-correct="несём"><span class="slot-solution">несём</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Вы</div><div class="drop-slot" data-correct="несёте"><span class="slot-solution">несёте</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Они</div><div class="drop-slot" data-correct="несут"><span class="slot-solution">несут</span></div></div>
+                </div>
+                <!-- Spalte 2 -->
+                <div class="verb-column">
+                    <div class="verb-title">НОСИТЬ (Allg.)</div>
+                    <div class="conj-row"><div class="conj-label">Я</div><div class="drop-slot" data-correct="ношу"><span class="slot-solution">ношу</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Ты</div><div class="drop-slot" data-correct="носишь"><span class="slot-solution">носишь</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Он/Она</div><div class="drop-slot" data-correct="носит"><span class="slot-solution">носит</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Мы</div><div class="drop-slot" data-correct="носим"><span class="slot-solution">носим</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Вы</div><div class="drop-slot" data-correct="носите"><span class="slot-solution">носите</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Они</div><div class="drop-slot" data-correct="носят"><span class="slot-solution">носят</span></div></div>
+                </div>
+            </div>
+            <!-- Wort Pool 1 -->
+            <div class="word-pool" id="pool1">
+                <!-- Wörter werden per JS gemischt -->
+                <div class="word-item">несу</div> <div class="word-item">несёшь</div>
+                <div class="word-item">несёт</div> <div class="word-item">несём</div>
+                <div class="word-item">несёте</div> <div class="word-item">несут</div>
+                <div class="word-item">ношу</div> <div class="word-item">носишь</div>
+                <div class="word-item">носит</div> <div class="word-item">носим</div>
+                <div class="word-item">носите</div> <div class="word-item">носят</div>
+            </div>
+        </div>
+
+        <!-- TAB 2: FÜHREN -->
+        <div id="tab2" class="tab-content">
+            <div class="verb-columns">
+                <div class="verb-column">
+                    <div class="verb-title">ВЕСТИ (Ziel)</div>
+                    <div class="conj-row"><div class="conj-label">Я</div><div class="drop-slot" data-correct="веду"><span class="slot-solution">веду</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Ты</div><div class="drop-slot" data-correct="ведёшь"><span class="slot-solution">ведёшь</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Он/Она</div><div class="drop-slot" data-correct="ведёт"><span class="slot-solution">ведёт</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Мы</div><div class="drop-slot" data-correct="ведём"><span class="slot-solution">ведём</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Вы</div><div class="drop-slot" data-correct="ведёте"><span class="slot-solution">ведёте</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Они</div><div class="drop-slot" data-correct="ведут"><span class="slot-solution">ведут</span></div></div>
+                </div>
+                <div class="verb-column">
+                    <div class="verb-title">ВОДИТЬ (Allg.)</div>
+                    <div class="conj-row"><div class="conj-label">Я</div><div class="drop-slot" data-correct="вожу"><span class="slot-solution">вожу</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Ты</div><div class="drop-slot" data-correct="водишь"><span class="slot-solution">водишь</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Он/Она</div><div class="drop-slot" data-correct="водит"><span class="slot-solution">водит</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Мы</div><div class="drop-slot" data-correct="водим"><span class="slot-solution">водим</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Вы</div><div class="drop-slot" data-correct="водите"><span class="slot-solution">водите</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Они</div><div class="drop-slot" data-correct="водят"><span class="slot-solution">водят</span></div></div>
+                </div>
+            </div>
+            <div class="word-pool" id="pool2">
+                <div class="word-item">веду</div> <div class="word-item">ведёшь</div>
+                <div class="word-item">ведёт</div> <div class="word-item">ведём</div>
+                <div class="word-item">ведёте</div> <div class="word-item">ведут</div>
+                <div class="word-item">вожу</div> <div class="word-item">водишь</div>
+                <div class="word-item">водит</div> <div class="word-item">водим</div>
+                <div class="word-item">водите</div> <div class="word-item">водят</div>
+            </div>
+        </div>
+
+        <!-- TAB 3: FAHREN -->
+        <div id="tab3" class="tab-content">
+            <div class="verb-columns">
+                <div class="verb-column">
+                    <div class="verb-title">ВЕЗТИ (Ziel)</div>
+                    <div class="conj-row"><div class="conj-label">Я</div><div class="drop-slot" data-correct="везу"><span class="slot-solution">везу</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Ты</div><div class="drop-slot" data-correct="везёшь"><span class="slot-solution">везёшь</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Он/Она</div><div class="drop-slot" data-correct="везёт"><span class="slot-solution">везёт</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Мы</div><div class="drop-slot" data-correct="везём"><span class="slot-solution">везём</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Вы</div><div class="drop-slot" data-correct="везёте"><span class="slot-solution">везёте</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Они</div><div class="drop-slot" data-correct="везут"><span class="slot-solution">везут</span></div></div>
+                </div>
+                <div class="verb-column">
+                    <div class="verb-title">ВОЗИТЬ (Allg.)</div>
+                    <div class="conj-row"><div class="conj-label">Я</div><div class="drop-slot" data-correct="вожу"><span class="slot-solution">вожу</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Ты</div><div class="drop-slot" data-correct="возишь"><span class="slot-solution">возишь</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Он/Она</div><div class="drop-slot" data-correct="возит"><span class="slot-solution">возит</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Мы</div><div class="drop-slot" data-correct="возим"><span class="slot-solution">возим</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Вы</div><div class="drop-slot" data-correct="возите"><span class="slot-solution">возите</span></div></div>
+                    <div class="conj-row"><div class="conj-label">Они</div><div class="drop-slot" data-correct="возят"><span class="slot-solution">возят</span></div></div>
+                </div>
+            </div>
+            <div class="word-pool" id="pool3">
+                <div class="word-item">везу</div> <div class="word-item">везёшь</div>
+                <div class="word-item">везёт</div> <div class="word-item">везём</div>
+                <div class="word-item">везёте</div> <div class="word-item">везут</div>
+                <div class="word-item">вожу</div> <div class="word-item">возишь</div>
+                <div class="word-item">возит</div> <div class="word-item">возим</div>
+                <div class="word-item">возите</div> <div class="word-item">возят</div>
+            </div>
+        </div>
+
+
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkTapTask()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetTapTask()">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleTapSolution()">Lösungen anzeigen</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    /* --- LOGIK FÜR TAP & PLACE --- */
+    let selectedWord = null;
+
+    // Initialisierung: Event Listener & Shuffle
+    document.addEventListener('DOMContentLoaded', () => {
+        // Mische die Wörter in allen Pools
+        document.querySelectorAll('.word-pool').forEach(pool => {
+            shufflePool(pool);
+        });
+        
+        // Klick auf Wörter im Pool
+        document.querySelectorAll('.word-item').forEach(item => {
+            item.addEventListener('click', function() {
+                handleWordClick(this);
+            });
+        });
+
+        // Klick auf Slots
+        document.querySelectorAll('.drop-slot').forEach(slot => {
+            slot.addEventListener('click', function() {
+                handleSlotClick(this);
+            });
+        });
+    });
+
+    function shufflePool(pool) {
+        for (let i = pool.children.length; i >= 0; i--) {
+            pool.appendChild(pool.children[Math.random() * i | 0]);
+        }
+    }
+
+    // Tab Wechsel
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        // Finde Button mit passendem onclick
+        const btns = document.querySelectorAll('.tab-btn');
+        btns.forEach(btn => {
+            if(btn.getAttribute('onclick').includes(tabId)) btn.classList.add('active');
+        });
+        
+        // Auswahl zurücksetzen beim Tabwechsel
+        if(selectedWord) {
+            selectedWord.classList.remove('selected');
+            selectedWord = null;
+        }
+    }
+
+    // 1. Wort anklicken
+    function handleWordClick(wordEl) {
+        // Wenn bereits im Slot, schiebe zurück in Pool
+        if (wordEl.parentElement.classList.contains('drop-slot')) {
+            const currentTab = wordEl.closest('.tab-content');
+            const pool = currentTab.querySelector('.word-pool');
+            pool.appendChild(wordEl);
+            wordEl.classList.remove('selected');
+            return;
+        }
+
+        // Wenn schon ausgewählt, abwählen
+        if (selectedWord === wordEl) {
+            wordEl.classList.remove('selected');
+            selectedWord = null;
+            return;
+        }
+
+        // Neues Wort auswählen
+        if (selectedWord) {
+            selectedWord.classList.remove('selected');
+        }
+        selectedWord = wordEl;
+        wordEl.classList.add('selected');
+    }
+
+    // 2. Slot anklicken
+    function handleSlotClick(slot) {
+        // Fall A: Ein Wort ist ausgewählt -> Platzieren
+        if (selectedWord) {
+            // Wenn Slot schon voll ist, tausche Wort zurück in Pool
+            if (slot.querySelector('.word-item')) {
+                const existingWord = slot.querySelector('.word-item');
+                const pool = slot.closest('.tab-content').querySelector('.word-pool');
+                pool.appendChild(existingWord);
+            }
+            
+            slot.appendChild(selectedWord);
+            selectedWord.classList.remove('selected');
+            selectedWord = null;
+        } 
+        // Fall B: Kein Wort ausgewählt, aber Slot hat eins -> Zurückschieben
+        else if (slot.querySelector('.word-item')) {
+            const word = slot.querySelector('.word-item');
+            const pool = slot.closest('.tab-content').querySelector('.word-pool');
+            pool.appendChild(word);
+        }
+    }
+
+    /* --- ÜBERPRÜFUNG --- */
+    function checkTapTask() {
+        const slots = document.querySelectorAll('.drop-slot');
+        
+        slots.forEach(slot => {
+            // Reset styles
+            slot.classList.remove('correct', 'incorrect');
+            
+            const wordItem = slot.querySelector('.word-item');
+            const correctVal = slot.getAttribute('data-correct');
+
+            if (wordItem) {
+                const userVal = wordItem.textContent.trim();
+                if (userVal === correctVal) {
+                    slot.classList.add('correct');
+                } else {
+                    slot.classList.add('incorrect');
+                }
+            }
+        });
+    }
+
+    /* --- RESET --- */
+    function resetTapTask() {
+        const slots = document.querySelectorAll('.drop-slot');
+        slots.forEach(slot => {
+            slot.classList.remove('correct', 'incorrect');
+            const word = slot.querySelector('.word-item');
+            if(word) {
+                // Finde den passenden Pool im selben Tab
+                const pool = slot.closest('.tab-content').querySelector('.word-pool');
+                pool.appendChild(word);
+            }
+            // Lösungstext verstecken
+            const sol = slot.querySelector('.slot-solution');
+            if(sol) sol.style.display = 'none';
+        });
+        // Shuffle again?
+        document.querySelectorAll('.word-pool').forEach(p => shufflePool(p));
+    }
+
+    /* --- LÖSUNG --- */
+    function toggleTapSolution() {
+        // Toggle Sichtbarkeit der kleinen Lösungstexte in den Slots
+        const sols = document.querySelectorAll('.slot-solution');
+        const isVisible = sols.length > 0 && sols[0].style.display === 'block';
+
+        sols.forEach(sol => {
+            sol.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+
+</script>
+
+</body>
+</html>
