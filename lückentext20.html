@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aufgabe: Lückentext mit Kontext</title>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --bg-color: #eef2f5;
+            --card-bg: #ffffff;
+            --highlight-bg: #fff9c4;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.8; /* Etwas mehr Zeilenabstand für Lesbarkeit mit Dropdowns */
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Aufgaben-Karte */
+        .task-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            border: 1px solid #ddd;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .task-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .task-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .instruction {
+            margin-bottom: 25px;
+            color: #555;
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        /* --- TEXT STYLING --- */
+        .cloze-text {
+            font-size: 1.1rem;
+            text-align: justify;
+        }
+
+        .text-block {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #ccc;
+        }
+
+        .text-block:last-child {
+            border-bottom: none;
+        }
+
+        .context-hint {
+            font-weight: bold;
+            background-color: var(--highlight-bg);
+            padding: 0 4px;
+            border-radius: 3px;
+            color: #f57f17;
+            cursor: help;
+        }
+
+        /* Dropdowns im Text */
+        select {
+            display: inline-block;
+            width: auto;
+            min-width: 100px;
+            padding: 5px 10px;
+            margin: 0 5px;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: #fafafa;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+        }
+
+        /* Feedback */
+        select.correct {
+            border-color: var(--success-color);
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        select.incorrect {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        /* Inline Lösung */
+        .inline-solution {
+            display: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: #2196f3;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 5px;
+            vertical-align: middle;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s;
+            flex: 1;
+        }
+
+        button:hover { filter: brightness(90%); }
+        .btn-check { background-color: var(--success-color); color: white; }
+        .btn-reset { background-color: #90a4ae; color: white; }
+        .btn-solution { background-color: #2196f3; color: white; }
+
+        @media (max-width: 600px) {
+            .btn-group { flex-direction: column; }
+            .cloze-text { text-align: left; } /* Besser für Mobile */
+            select { width: 100%; margin: 5px 0; } /* Auf Handy volle Breite für leichtere Auswahl */
+            .inline-solution { display: none !important; } /* Auf Handy Lösung anders handhaben oder Block */
+            /* Mobile Anpassung für Lösung: Zeige sie als Block unter dem Select */
+            .inline-solution.mobile-visible {
+                display: block !important;
+                width: fit-content;
+                margin-top: 5px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="task-card" id="task-cloze">
+        
+        <div class="task-header">
+            <h2 class="task-title">Lückentexte mit Kontext</h2>
+            <span class="task-badge">3 Geschichten</span>
+        </div>
+
+        <p class="instruction">
+            Lesen Sie den Text. Achten Sie auf den Kontext (z.B. "hin und her", "jetzt", "oft") und die markierten Signalwörter. Wählen Sie das richtige Verb.
+        </p>
+
+        <div class="cloze-text">
+
+            <!-- Text 1: Vergangenheit / Park (Multidirektional) -->
+            <div class="text-block">
+                <h3>1. Im Park (Gestern)</h3>
+                <p>
+                    Вчера мы гуляли <span class="context-hint">по парку</span> (durch den Park). 
+                    Это было долго. Я ходил и 
+                    <select data-answer="носил">
+                        <option value="">...</option>
+                        <option value="нёс">нёс</option>
+                        <option value="носил">носил</option>
+                        <option value="вёл">вёл</option>
+                    </select>
+                    <span class="inline-solution">носил</span>
+                    тяжёлый рюкзак. А моя жена 
+                    <select data-answer="водила">
+                        <option value="">...</option>
+                        <option value="вела">вела</option>
+                        <option value="водила">водила</option>
+                        <option value="везла">везла</option>
+                    </select>
+                    <span class="inline-solution">водила</span>
+                    собаку. Собака бегала туда-сюда, и жена устала её водить.
+                </p>
+            </div>
+
+            <!-- Text 2: Jetzt gerade / Zielgerichtet (Unidirektional) -->
+            <div class="text-block">
+                <h3>2. Auf der Straße (Jetzt)</h3>
+                <p>
+                    Смотри! <span class="context-hint">Вон там</span> (da drüben) идёт мой брат. 
+                    Он идёт в школу и 
+                    <select data-answer="несёт">
+                        <option value="">...</option>
+                        <option value="несёт">несёт</option>
+                        <option value="носит">носит</option>
+                        <option value="водит">водит</option>
+                    </select>
+                    <span class="inline-solution">несёт</span>
+                    большую сумку. Рядом идёт мама, она 
+                    <select data-answer="ведёт">
+                        <option value="">...</option>
+                        <option value="водит">водит</option>
+                        <option value="ведёт">ведёт</option>
+                        <option value="возит">возит</option>
+                    </select>
+                    <span class="inline-solution">ведёт</span>
+                    маленькую сестру за руку. 
+                    А по дороге едет автобус и 
+                    <select data-answer="везёт">
+                        <option value="">...</option>
+                        <option value="возит">возит</option>
+                        <option value="везёт">везёт</option>
+                        <option value="носит">носит</option>
+                    </select>
+                    <span class="inline-solution">везёт</span>
+                    пассажиров в центр.
+                </p>
+            </div>
+
+            <!-- Text 3: Gewohnheit vs. Ausnahme (Gemischt) -->
+            <div class="text-block">
+                <h3>3. Der Beruf (Allgemein vs. Jetzt)</h3>
+                <p>
+                    Мой папа — водитель. Он <span class="context-hint">каждый день</span> 
+                    <select data-answer="возит">
+                        <option value="">...</option>
+                        <option value="везёт">везёт</option>
+                        <option value="возит">возит</option>
+                        <option value="ведёт">ведёт</option>
+                    </select>
+                    <span class="inline-solution">возит</span>
+                    товары. <span class="context-hint">Обычно</span> он 
+                    <select data-answer="возит">
+                        <option value="">...</option>
+                        <option value="возит">возит</option>
+                        <option value="везёт">везёт</option>
+                        <option value="носит">носит</option>
+                    </select>
+                    <span class="inline-solution">возит</span>
+                    продукты, но <span class="context-hint">сегодня</span> он 
+                    <select data-answer="везёт">
+                        <option value="">...</option>
+                        <option value="возит">возит</option>
+                        <option value="везёт">везёт</option>
+                        <option value="ведёт">ведёт</option>
+                    </select>
+                    <span class="inline-solution">везёт</span>
+                    мебель. Я <span class="context-hint">часто</span> 
+                    <select data-answer="ношу">
+                        <option value="">...</option>
+                        <option value="несу">несу</option>
+                        <option value="ношу">ношу</option>
+                        <option value="вожу">вожу</option>
+                    </select>
+                    <span class="inline-solution">ношу</span>
+                    ему обед на работу.
+                </p>
+            </div>
+            
+             <!-- Zusatzsätze für Fahrer -->
+             <div class="text-block">
+                <h3>4. Fähigkeit (Auto fahren)</h3>
+                <p>
+                    Ты умеешь водить машину? Да, я хорошо 
+                    <select data-answer="вожу">
+                        <option value="">...</option>
+                        <option value="веду">веду</option>
+                        <option value="вожу">вожу</option>
+                        <option value="ношу">ношу</option>
+                    </select>
+                    <span class="inline-solution">вожу</span>
+                    машину. Но сейчас я не могу говорить по телефону, потому что я 
+                    <select data-answer="веду">
+                        <option value="">...</option>
+                        <option value="веду">веду</option>
+                        <option value="вожу">вожу</option>
+                        <option value="несу">несу</option>
+                    </select>
+                    <span class="inline-solution">веду</span>
+                    машину.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkCloze()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetCloze()">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleClozeSolution()">Lösung anzeigen</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const clozeTaskID = 'task-cloze';
+
+    function checkCloze() {
+        const container = document.getElementById(clozeTaskID);
+        const selects = container.querySelectorAll('select');
+        
+        selects.forEach(select => {
+            const userAnswer = select.value;
+            const correctAnswer = select.getAttribute('data-answer');
+            
+            select.classList.remove('correct', 'incorrect');
+
+            if (userAnswer !== "") {
+                if (userAnswer === correctAnswer) {
+                    select.classList.add('correct');
+                } else {
+                    select.classList.add('incorrect');
+                }
+            }
+        });
+    }
+
+    function resetCloze() {
+        const container = document.getElementById(clozeTaskID);
+        const selects = container.querySelectorAll('select');
+        const solutions = container.querySelectorAll('.inline-solution');
+
+        selects.forEach(select => {
+            select.selectedIndex = 0;
+            select.classList.remove('correct', 'incorrect');
+        });
+
+        solutions.forEach(sol => {
+            sol.style.display = 'none';
+            sol.classList.remove('mobile-visible');
+        });
+    }
+
+    function toggleClozeSolution() {
+        const container = document.getElementById(clozeTaskID);
+        const solutions = container.querySelectorAll('.inline-solution');
+        
+        // Prüfen ob die erste Lösung sichtbar ist
+        // Wir prüfen, ob die Klasse 'mobile-visible' gesetzt ist oder display != none
+        const isVisible = solutions.length > 0 && solutions[0].style.display !== 'none';
+
+        solutions.forEach(sol => {
+            if (isVisible) {
+                sol.style.display = 'none';
+                sol.classList.remove('mobile-visible');
+            } else {
+                // Check if mobile view (window width < 600px)
+                if (window.innerWidth <= 600) {
+                     sol.classList.add('mobile-visible');
+                } else {
+                     sol.style.display = 'inline-block';
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
