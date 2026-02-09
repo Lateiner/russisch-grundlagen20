@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aufgabe: Satzbaukasten (Interview)</title>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --text-color: #333;
+            --bg-color: #eef2f5;
+            --card-bg: #ffffff;
+            --word-bg: #e3f2fd;
+            --word-border: #90caf9;
+            --area-bg: #fafafa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Aufgaben-Karte */
+        .task-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            border: 1px solid #ddd;
+        }
+
+        .task-header {
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+
+        .task-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0 0 5px 0;
+        }
+
+        .instruction {
+            color: #555;
+            margin-bottom: 25px;
+            background-color: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        /* --- SATZBAU ITEM --- */
+        .builder-list {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .builder-item {
+            background-color: #fff;
+            /* Kein Border mehr um das Item, um es sauberer zu machen, dafür Abstände */
+            padding-bottom: 20px;
+            border-bottom: 2px dashed #eee;
+        }
+        
+        .builder-item:last-child { border-bottom: none; }
+
+        /* Frage & Ziel */
+        .question-block {
+            margin-bottom: 15px;
+        }
+
+        .ru-question {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .de-prompt {
+            font-size: 0.95rem;
+            color: #555;
+            background-color: #fff3e0;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+            border-left: 3px solid #ff9800;
+        }
+
+        /* Antwort-Bereich (Wo die Wörter landen) */
+        .answer-area {
+            min-height: 60px;
+            background-color: var(--area-bg);
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 15px;
+            transition: border-color 0.2s;
+        }
+
+        .answer-area:empty::before {
+            content: "Tippen Sie auf die Wörter unten...";
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .answer-area.correct {
+            border-color: var(--success-color);
+            background-color: #f1f8e9;
+        }
+
+        .answer-area.incorrect {
+            border-color: var(--error-color);
+            background-color: #fff8f8;
+        }
+
+        /* Wort-Pool (Quelle) */
+        .word-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Die Wort-Chips */
+        .word-chip {
+            background-color: var(--word-bg);
+            border: 1px solid var(--word-border);
+            color: #1565c0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s, background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .word-chip:hover {
+            transform: translateY(-2px);
+            background-color: #bbdefb;
+        }
+
+        .word-chip:active {
+            transform: scale(0.95);
+        }
+
+        /* Lösungstext (versteckt) */
+        .solution-text {
+            display: none;
+            margin-top: 10px;
+            color: #2e7d32;
+            font-weight: bold;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            border-top: 2px solid #f0f0f0;
+            padding-top: 20px;
+        }
+
+        button.action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s;
+            flex: 1;
+        }
+
+        button.action-btn:hover { filter: brightness(90%); }
+        .btn-check { background-color: var(--success-color); color: white; }
+        .btn-reset { background-color: #90a4ae; color: white; }
+        .btn-solution { background-color: #2196f3; color: white; }
+
+        @media (max-width: 600px) {
+            .btn-group { flex-direction: column; }
+            .task-card { padding: 15px; }
+            .word-chip { padding: 6px 12px; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="task-card" id="task-builder">
+        
+        <div class="task-header">
+            <h2 class="task-title">5. Satzbaukasten (Interview)</h2>
+            <span class="task-badge">4 Sätze</span>
+        </div>
+
+        <p class="instruction">
+            Bauen Sie die Antwort aus den russischen Wörtern.
+            Tippen Sie die Wörter in der richtigen Reihenfolge an.
+        </p>
+
+        <div class="builder-list">
+
+            <!-- Satz 1 -->
+            <div class="builder-item" id="b1">
+                <div class="question-block">
+                    <div class="ru-question">1. Вы умеете водить машину?</div>
+                    <div class="de-prompt">Antworten Sie: "Ja, ich kann (weiß wie) Auto fahren."</div>
+                </div>
+                <!-- Zielbereich -->
+                <div class="answer-area" data-solution="Да, я умею водить машину."></div>
+                <!-- Wort Pool (Wird per JS gemischt) -->
+                <div class="word-pool">
+                    <span class="word-chip">Да,</span>
+                    <span class="word-chip">я</span>
+                    <span class="word-chip">умею</span>
+                    <span class="word-chip">водить</span>
+                    <span class="word-chip">машину.</span>
+                    <!-- Distraktoren (Falsche Wörter) -->
+                    <span class="word-chip">вожу</span>
+                </div>
+                <div class="solution-text">Lösung: Да, я умею водить машину.</div>
+            </div>
+
+            <!-- Satz 2 -->
+            <div class="builder-item" id="b2">
+                <div class="question-block">
+                    <div class="ru-question">2. Вы часто носите костюмы?</div>
+                    <div class="de-prompt">Antworten Sie: "Nein, ich trage selten Anzüge."</div>
+                </div>
+                <div class="answer-area" data-solution="Нет, я редко ношу костюмы."></div>
+                <div class="word-pool">
+                    <span class="word-chip">Нет,</span>
+                    <span class="word-chip">я</span>
+                    <span class="word-chip">редко</span>
+                    <span class="word-chip">ношу</span>
+                    <span class="word-chip">костюмы.</span>
+                    <span class="word-chip">несу</span>
+                </div>
+                <div class="solution-text">Lösung: Нет, я редко ношу костюмы.</div>
+            </div>
+
+            <!-- Satz 3 -->
+            <div class="builder-item" id="b3">
+                <div class="question-block">
+                    <div class="ru-question">3. Кто возил вас в школу?</div>
+                    <div class="de-prompt">Antworten Sie: "Papa fuhr mich zur Schule."</div>
+                </div>
+                <div class="answer-area" data-solution="Папа возил меня в школу."></div>
+                <div class="word-pool">
+                    <span class="word-chip">Папа</span>
+                    <span class="word-chip">возил</span>
+                    <span class="word-chip">меня</span>
+                    <span class="word-chip">в</span>
+                    <span class="word-chip">школу.</span>
+                    <span class="word-chip">вёз</span>
+                </div>
+                <div class="solution-text">Lösung: Папа возил меня в школу.</div>
+            </div>
+
+            <!-- Satz 4 -->
+            <div class="builder-item" id="b4">
+                <div class="question-block">
+                    <div class="ru-question">4. Куда вы идёте?</div>
+                    <div class="de-prompt">Antworten Sie: "Ich gehe und trage eine Torte."</div>
+                </div>
+                <div class="answer-area" data-solution="Я иду и несу торт."></div>
+                <div class="word-pool">
+                    <span class="word-chip">Я</span>
+                    <span class="word-chip">иду</span>
+                    <span class="word-chip">и</span>
+                    <span class="word-chip">несу</span>
+                    <span class="word-chip">торт.</span>
+                    <span class="word-chip">ношу</span>
+                </div>
+                <div class="solution-text">Lösung: Я иду и несу торт.</div>
+            </div>
+
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn btn-check" onclick="checkBuilder()">Überprüfen</button>
+            <button class="action-btn btn-reset" onclick="resetBuilder()">Zurücksetzen</button>
+            <button class="action-btn btn-solution" onclick="toggleBuilderSolution()">Lösungen anzeigen</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const buildTaskID = 'task-builder';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialisiere die Wort-Chips
+        const container = document.getElementById(buildTaskID);
+        const chips = container.querySelectorAll('.word-chip');
+        const pools = container.querySelectorAll('.word-pool');
+
+        // Mische Wörter in jedem Pool
+        pools.forEach(pool => {
+            for (let i = pool.children.length; i >= 0; i--) {
+                pool.appendChild(pool.children[Math.random() * i | 0]);
+            }
+        });
+
+        // Event Listener für Chips
+        chips.forEach(chip => {
+            chip.addEventListener('click', function() {
+                moveChip(this);
+            });
+        });
+    });
+
+    function moveChip(chip) {
+        const itemContainer = chip.closest('.builder-item');
+        const pool = itemContainer.querySelector('.word-pool');
+        const area = itemContainer.querySelector('.answer-area');
+
+        // Wenn Chip im Pool ist -> bewege zur Area
+        if (chip.parentElement === pool) {
+            area.appendChild(chip);
+            area.classList.remove('correct', 'incorrect'); // Reset Feedback
+        } 
+        // Wenn Chip in Area ist -> bewege zurück zum Pool
+        else {
+            pool.appendChild(chip);
+            area.classList.remove('correct', 'incorrect'); // Reset Feedback
+        }
+    }
+
+    function checkBuilder() {
+        const container = document.getElementById(buildTaskID);
+        const items = container.querySelectorAll('.builder-item');
+
+        items.forEach(item => {
+            const area = item.querySelector('.answer-area');
+            const chipsInArea = area.querySelectorAll('.word-chip');
+            const solutionText = area.getAttribute('data-solution').replace(/\s/g, ''); // Leerzeichen entfernen für Vergleich
+            
+            // Konstruiere den Satz des Nutzers
+            let userSentence = "";
+            chipsInArea.forEach(chip => {
+                userSentence += chip.textContent;
+            });
+
+            // Einfacher String-Vergleich (ohne Leerzeichen, um Fehler bei Spaces zu vermeiden)
+            // Achtung: Interpunktion in Chips muss beachtet werden.
+            
+            // Reset styles
+            area.classList.remove('correct', 'incorrect');
+
+            if (chipsInArea.length === 0) {
+                return; // Nichts getan
+            }
+
+            if (userSentence === solutionText) {
+                area.classList.add('correct');
+            } else {
+                area.classList.add('incorrect');
+            }
+        });
+    }
+
+    function resetBuilder() {
+        const container = document.getElementById(buildTaskID);
+        const items = container.querySelectorAll('.builder-item');
+        const solutions = container.querySelectorAll('.solution-text');
+
+        items.forEach(item => {
+            const pool = item.querySelector('.word-pool');
+            const area = item.querySelector('.answer-area');
+            const chips = area.querySelectorAll('.word-chip');
+            
+            // Alle Chips zurück in den Pool
+            chips.forEach(chip => pool.appendChild(chip));
+            
+            // Styles reset
+            area.classList.remove('correct', 'incorrect');
+        });
+
+        solutions.forEach(sol => sol.style.display = 'none');
+    }
+
+    function toggleBuilderSolution() {
+        const container = document.getElementById(buildTaskID);
+        const solutions = container.querySelectorAll('.solution-text');
+        
+        const isVisible = solutions.length > 0 && solutions[0].style.display === 'block';
+
+        solutions.forEach(sol => {
+            sol.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+</script>
+
+</body>
+</html>
