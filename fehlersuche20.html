@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aufgabe: Fehlersuche</title>
+    <style>
+        :root {
+            --primary-color: #3f51b5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --warning-color: #ff9800;
+            --text-color: #333;
+            --bg-color: #eef2f5;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Aufgaben-Karte */
+        .task-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            border: 1px solid #ddd;
+        }
+
+        .task-header {
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+
+        .task-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0 0 5px 0;
+        }
+
+        .instruction {
+            color: #555;
+            margin-bottom: 20px;
+            background-color: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--warning-color);
+        }
+
+        /* --- LISTE DER FEHLERSÄTZE --- */
+        .error-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .error-item {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column; /* Mobile First: Untereinander */
+            gap: 10px;
+            transition: box-shadow 0.2s;
+        }
+
+        .error-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        /* Der Satz-Container */
+        .sentence-wrapper {
+            font-size: 1.1rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-wrong {
+            color: var(--error-color);
+            font-weight: bold;
+            margin-right: 5px;
+            font-size: 1.2rem;
+        }
+
+        /* Das Dropdown im Satz */
+        select {
+            padding: 5px 10px;
+            border: 2px solid #ffccbc; /* Leicht rötlicher Rand als Hinweis */
+            border-radius: 6px;
+            background-color: #fff;
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: inherit;
+            color: #d84315; /* Textfarbe leicht rötlich zu Beginn */
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            color: #333;
+            box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+        }
+
+        /* Wenn User etwas ändert, wird Farbe neutraler */
+        select.changed {
+            border-color: #ccc;
+            color: #333;
+        }
+
+        /* Feedback Klassen */
+        select.correct {
+            border-color: var(--success-color);
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        select.incorrect {
+            border-color: var(--error-color);
+            background-color: #ffebee;
+            color: #c62828;
+            text-decoration: line-through; /* Streicht falsche Wahl durch */
+        }
+
+        /* Erklärung zum Fehler (Rechts oder Darunter) */
+        .error-explanation {
+            font-size: 0.9rem;
+            color: #757575;
+            font-style: italic;
+            background-color: #fafafa;
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid #e0e0e0;
+        }
+
+        /* Inline Lösung */
+        .inline-solution {
+            display: none;
+            margin-top: 5px;
+            font-size: 0.95rem;
+            color: #1565c0;
+            font-weight: bold;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+            border-top: 2px solid #f0f0f0;
+            padding-top: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: filter 0.2s;
+            flex: 1;
+        }
+
+        button:hover { filter: brightness(90%); }
+        .btn-check { background-color: var(--success-color); color: white; }
+        .btn-reset { background-color: #90a4ae; color: white; }
+        .btn-solution { background-color: #2196f3; color: white; }
+
+        /* Media Queries */
+        @media (min-width: 600px) {
+            .error-item {
+                flex-direction: row; /* Nebeneinander auf Tablet/Desktop */
+                align-items: center;
+                justify-content: space-between;
+            }
+            .error-explanation {
+                max-width: 40%;
+                text-align: right;
+                background: none;
+                padding: 0;
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="task-card" id="task-error">
+        
+        <div class="task-header">
+            <h2 class="task-title">Fehlersuche & Korrektur</h2>
+            <span class="task-badge">6 Sätze</span>
+        </div>
+
+        <p class="instruction">
+            Diese Sätze enthalten typische Fehler. 
+            Klicken Sie auf das <strong>rot markierte Wort</strong> und wählen Sie die korrekte Form aus.
+        </p>
+
+        <div class="error-list">
+
+            <!-- Fehler 1: Aspekt (Oft + Nehmen) -->
+            <div class="error-item">
+                <div class="sentence-part">
+                    <div class="sentence-wrapper">
+                        <span class="icon-wrong">❌</span>
+                        <span>Я часто</span>
+                        <select data-answer="ношу" onchange="this.classList.add('changed')">
+                            <option value="несу" selected>несу</option> <!-- Der Fehler -->
+                            <option value="ношу">ношу</option>
+                            <option value="веду">веду</option>
+                        </select>
+                        <span>сумку в магазин.</span>
+                    </div>
+                    <div class="inline-solution">Lösung: ношу</div>
+                </div>
+                <div class="error-explanation">
+                    Fehler: "Часто" (oft) braucht die Gruppe 2 (Allgemein).
+                </div>
+            </div>
+
+            <!-- Fehler 2: Falsches Verb (Taxi führt) -->
+            <div class="error-item">
+                <div class="sentence-part">
+                    <div class="sentence-wrapper">
+                        <span class="icon-wrong">❌</span>
+                        <span>Такси</span>
+                        <select data-answer="везёт" onchange="this.classList.add('changed')">
+                            <option value="ведёт" selected>ведёт</option> <!-- Der Fehler -->
+                            <option value="возит">возит</option>
+                            <option value="везёт">везёт</option>
+                        </select>
+                        <span>пассажиров домой.</span>
+                    </div>
+                    <div class="inline-solution">Lösung: везёт</div>
+                </div>
+                <div class="error-explanation">
+                    Fehler: Fahrzeuge "transportieren" (везти), sie "führen" nicht.
+                </div>
+            </div>
+
+            <!-- Fehler 3: Fußgänger vs Transport (Mama fährt Sohn an der Hand) -->
+            <div class="error-item">
+                <div class="sentence-part">
+                    <div class="sentence-wrapper">
+                        <span class="icon-wrong">❌</span>
+                        <span>Мама</span>
+                        <select data-answer="ведёт" onchange="this.classList.add('changed')">
+                            <option value="везёт" selected>везёт</option> <!-- Der Fehler -->
+                            <option value="ведёт">ведёт</option>
+                            <option value="несёт">несёт</option>
+                        </select>
+                        <span>сына за руку.</span>
+                    </div>
+                    <div class="inline-solution">Lösung: ведёт</div>
+                </div>
+                <div class="error-explanation">
+                    Fehler: An der Hand gehen = zu Fuß = вести (führen).
+                </div>
+            </div>
+
+            <!-- Fehler 4: Auto fahren (Falscher Ausdruck) -->
+            <div class="error-item">
+                <div class="sentence-part">
+                    <div class="sentence-wrapper">
+                        <span class="icon-wrong">❌</span>
+                        <span>Я умею</span>
+                        <select data-answer="водить" onchange="this.classList.add('changed')">
+                            <option value="носить" selected>носить</option> <!-- Der Fehler -->
+                            <option value="водить">водить</option>
+                            <option value="возить">возить</option>
+                        </select>
+                        <span>машину.</span>
+                    </div>
+                    <div class="inline-solution">Lösung: водить</div>
+                </div>
+                <div class="error-explanation">
+                    Fehler: "Auto fahren" (Fähigkeit) heißt "водить машину".
+                </div>
+            </div>
+
+            <!-- Fehler 5: Aspekt Vergangenheit (Gestern einmalig) -->
+            <div class="error-item">
+                <div class="sentence-part">
+                    <div class="sentence-wrapper">
+                        <span class="icon-wrong">❌</span>
+                        <span>Вчера он</span>
+                        <select data-answer="вёл" onchange="this.classList.add('changed')">
+                            <option value="водил" selected>водил</option> <!-- Der Fehler -->
+                            <option value="вёз">вёз</option>
+                            <option value="вёл">вёл</option>
+                        </select>
+                        <span>собаку к ветеринару (туда).</span>
+                    </div>
+                    <div class="inline-solution">Lösung: вёл</div>
+                </div>
+                <div class="error-explanation">
+                    Fehler: Einmalige Richtung in der Vergangenheit = вести (вёл).
+                </div>
+            </div>
+
+            <!-- Fehler 6: Koffer (Transport vs Tragen) -->
+            <div class="error-item">
+                <div class="sentence-part">
+                    <div class="sentence-wrapper">
+                        <span class="icon-wrong">❌</span>
+                        <span>У чемодана есть колёса. Я</span>
+                        <select data-answer="везу" onchange="this.classList.add('changed')">
+                            <option value="несу" selected>несу</option> <!-- Der Fehler -->
+                            <option value="веду">веду</option>
+                            <option value="везу">везу</option>
+                        </select>
+                        <span>его.</span>
+                    </div>
+                    <div class="inline-solution">Lösung: везу</div>
+                </div>
+                <div class="error-explanation">
+                    Fehler: Mit Rollen/Rädern benutzt man "везти" (wie Fahrzeug).
+                </div>
+            </div>
+
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkErrors()">Überprüfen</button>
+            <button class="btn-reset" onclick="resetErrors()">Zurücksetzen</button>
+            <button class="btn-solution" onclick="toggleErrorSolution()">Lösung anzeigen</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const errTaskID = 'task-error';
+
+    function checkErrors() {
+        const container = document.getElementById(errTaskID);
+        const selects = container.querySelectorAll('select');
+        
+        selects.forEach(select => {
+            const userAnswer = select.value;
+            const correctAnswer = select.getAttribute('data-answer');
+            
+            // Alte Klassen entfernen
+            select.classList.remove('correct', 'incorrect');
+
+            if (userAnswer === correctAnswer) {
+                select.classList.add('correct');
+            } else {
+                select.classList.add('incorrect');
+            }
+        });
+    }
+
+    function resetErrors() {
+        const container = document.getElementById(errTaskID);
+        const selects = container.querySelectorAll('select');
+        const solutions = container.querySelectorAll('.inline-solution');
+
+        selects.forEach(select => {
+            // Setze auf den ersten Index zurück (der den Fehler enthält)
+            select.selectedIndex = 0; 
+            select.classList.remove('correct', 'incorrect', 'changed');
+        });
+
+        solutions.forEach(sol => {
+            sol.style.display = 'none';
+        });
+    }
+
+    function toggleErrorSolution() {
+        const container = document.getElementById(errTaskID);
+        const solutions = container.querySelectorAll('.inline-solution');
+        
+        // Prüfen ob die erste Lösung sichtbar ist
+        const isVisible = solutions.length > 0 && solutions[0].style.display === 'block';
+
+        solutions.forEach(sol => {
+            sol.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+</script>
+
+</body>
+</html>
